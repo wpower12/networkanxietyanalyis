@@ -1,0 +1,1 @@
+'datetime', 'user_id', 'tweet_id', 'text', "u_acct_age", "u_n_followers", "u_n_following", "u_n_favorites", "u_n_lists", "u_n_tweets", "t_n_retweets", "t_n_hashtags" ,"t_n_user_mentions", "t_n_urls", "t_n_chars", "t_n_digits"
