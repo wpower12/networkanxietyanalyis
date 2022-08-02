@@ -59,6 +59,7 @@ def get_tweet_features(tweet):
 
 user_df = pd.read_csv(FN_USERS)
 proc_users = pd.read_csv(FN_PROC_USERS, header=None, dtype={0: int})[0].tolist()
+
 n_users = len(user_df)
 c_users = 0
 for _, row in user_df.iterrows():

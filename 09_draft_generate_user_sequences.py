@@ -20,7 +20,7 @@ FN_LEXICON = "data/prepared/anxiety_lexicon_filtered.csv"
 FN_OUT_RAW = "data/prepared/mil_base_user_level_00.csv"
 FN_OUT_AGG = "data/prepared/mil_base_user_level_agg_00.csv"
 
-DIR_USERS = "data/prepared/user_level_mb"
+DIR_USERS = "data/prepared/user_level_mb_old"
 
 stopwords_eng = stopwords.words("english")
 stopwords_eng += string.punctuation
