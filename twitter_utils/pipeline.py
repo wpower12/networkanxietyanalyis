@@ -1,4 +1,4 @@
-from os import listdir
+from os import listdir, path, mkdir
 from os.path import isfile, join
 import torch
 import random
@@ -22,7 +22,7 @@ separate directories, so that the next pipeline step can keep track of which to 
 NOTE - Currently not doing any spam filtering. Keeping that out until the rest of the pipeline is working. 
 """
 def process_raw_tweets_to_user_dfs(fn_raw, tkz, ltz, alx, stz, sent_thresh, date_range, fn_out_raw, dir_save_users,
-                                   process_mn=False):
+                                   process_mn=False, limit=None):
     df_raw = load_huts_mn_df_from_fn(fn_raw)
     df_raw = preprocess_tweets_w_alex(df_raw,
                                       tkz,
@@ -31,8 +31,12 @@ def process_raw_tweets_to_user_dfs(fn_raw, tkz, ltz, alx, stz, sent_thresh, date
                                       alx,
                                       verbose=True,
                                       sent=stz,
-                                      mn=process_mn)  # Only True for the central users. don't need it for Mentioned.
+                                      mn=process_mn,  # Only True for the central users. don't need it for Mentioned.
+                                      limit=limit)
     df_raw.to_csv(fn_out_raw, index=False, quoting=csv.QUOTE_NONNUMERIC)
+
+    if not path.exists(dir_save_users):
+        mkdir(dir_save_users)
 
     # User Sequences
     users = df_raw['user_id'].unique()

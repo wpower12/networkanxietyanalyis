@@ -61,8 +61,10 @@ stopwords: list of stopwords.
 alex: Anxiety lexicon: A map of words to their anxiety scores.
 fn_stub: the string that'll go before [lemma, dict, bow].csv. Assumed to already have its id and stuff.
 """
-def preprocess_tweets_w_alex(df, tkz, ltz, stopwords, alex, verbose=False, sent=None, mn=False,
-                             bert_model=None, bert_token=None):
+def preprocess_tweets_w_alex(df, tkz, ltz, stopwords, alex, verbose=False, sent=None, mn=False, limit=None):
+    if limit is not None:
+        df = df[:limit].copy()
+
     clean_urls(df)
     if verbose: print("urls cleaned")
 
@@ -74,9 +76,12 @@ def preprocess_tweets_w_alex(df, tkz, ltz, stopwords, alex, verbose=False, sent=
 
     if sent is not None:
         if verbose: print("adding sentiment features")
-        df['sentiment'] = df['text'].apply(calc_sent)
+        tqdm.pandas(unit="tweet", delay=0.1, disable=(not verbose))
+        df['sentiment'] = df['text'].progress_apply(calc_sent)
 
-    df['lemmas'] = df['text'].apply(make_preprocess(tkz, ltz, stopwords))
+    if verbose: print("tokenizing and lemmatizing.")
+    tqdm.pandas(unit="tweet", delay=0.1, disable=(not verbose))
+    df['lemmas'] = df['text'].progress_apply(make_preprocess(tkz, ltz, stopwords))
 
     # calculate anxiety score
     def anxiety_score(lemmas):
@@ -87,15 +92,14 @@ def preprocess_tweets_w_alex(df, tkz, ltz, stopwords, alex, verbose=False, sent=
         return s
 
     if verbose: print("adding anxiety score")
-    df['anxiety'] = df['lemmas'].apply(anxiety_score)
+    tqdm.pandas(unit="tweet", delay=0.1, disable=(not verbose))
+    df['anxiety'] = df['lemmas'].progress_apply(anxiety_score)
 
     if mn:
         # convert MN string into actual list.
-        df['mentioned_users'] = df['mentioned_users'].apply(mu_str_to_list)
-
-    if bert_model is not None and bert_token is not None:
-        if verbose: print("adding bert features")
-        df['bert'] = df['text'].apply(lambda t: bert_model(torch.tensor([bert_token.encode(t)])))
+        if verbose: print("processing mentioned user lists")
+        tqdm.pandas(unit="tweet", delay=0.1, disable=(not verbose))
+        df['mentioned_users'] = df['mentioned_users'].progress_apply(mu_str_to_list)
 
     return df
 
