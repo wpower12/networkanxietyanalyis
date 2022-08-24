@@ -3,21 +3,25 @@ import torch_geometric.nn as pygnn
 from torch.nn import Module, RNN, Linear, BCELoss
 from torch.nn.functional import relu
 from torch.optim import SGD
-from twitter_utils import pipeline, processing
+from twitter_utils import pipeline, processing, utils
+
+# Trying to stay reproducible.
+RANDOM_SEED = 0
+utils.set_random_seeds(RANDOM_SEED)
 
 
 USER_SEQ_DIR = "data/prepared/mb_user_sequences_new_targets"
-RESULTS_DIR = "data/results/sus_vs_mn_00"
+RESULTS_DIR = "data/results/sus_vs_mn_02"
 WINDOW_SIZE = 5
 ANX_THRESHOLD = 0.0
-NUM_EPOCHS = 1
-TEST_FRAC = 0.35
+NUM_EPOCHS = 4
+TEST_FRAC = 0.15
+TEST_INTERVAL = 4000
 
 graph_sequences, labels = pipeline.read_user_mn_examples_from_dir(USER_SEQ_DIR,
                                                                   WINDOW_SIZE,
                                                                   ANX_THRESHOLD,
-                                                                  target_col="max_raw_anx",
-                                                                  limit=100)
+                                                                  target_col="max_raw_anx")
 user_sequences = processing.extract_cuss_from_gss(graph_sequences)
 
 
@@ -49,7 +53,8 @@ with open("{}/gsm_log.csv".format(RESULTS_DIR), 'w') as gsm_log_f:
                                  gsm_train,
                                  gsm_test,
                                  num_epochs=NUM_EPOCHS,
-                                 log_file=gsm_log_f)
+                                 log_file=gsm_log_f,
+                                 test_interval=TEST_INTERVAL)
 
 
 class SingleUserSequenceModel(Module):
@@ -78,4 +83,5 @@ with open("{}/susm_log.csv".format(RESULTS_DIR), 'w') as susm_log_f:
                                  susm_train,
                                  susm_test,
                                  num_epochs=NUM_EPOCHS,
-                                 log_file=susm_log_f)
+                                 log_file=susm_log_f,
+                                 test_interval=TEST_INTERVAL)

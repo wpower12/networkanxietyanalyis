@@ -5,6 +5,7 @@ import csv
 from nltk.tokenize import TweetTokenizer
 from nltk.stem import WordNetLemmatizer
 from nltk.sentiment.vader import SentimentIntensityAnalyzer
+from transformers import AutoModel, AutoTokenizer
 from tqdm import tqdm
 from twitter_utils import utils, processing
 import spam
@@ -20,22 +21,22 @@ FN_HUTS_MN = "data/raw/mil_bases/historic_user_tweets_w_mn.csv"
 FN_LEXICON = "data/prepared/anxiety_lexicon_filtered.csv"
 FN_SH_ARFF = "data/raw/spam/95k-continuous.arff"
 
-FN_OUT_RAW = "data/prepared/mil_base/huts_mn_preprocessed_new_targets.csv"
+FN_OUT_RAW = "data/prepared/mil_base/huts_mn_preprocessed_bert_features.csv"
 HUTS_OUT_DIR = "data/prepared/mil_base/"
-USER_OUT_DIR = "data/prepared/mb_user_sequences_new_targets"
+USER_OUT_DIR = "data/prepared/mb_user_sequences_bert_features"
 
 # Spam Filtering ###
-print("loading and applying spam filter")
-sh_clf  = spam.models.load_spam_ham_pipeline(FN_SH_ARFF)  # Trains an SH classifier based on the provided spam data.
+# print("loading and applying spam filter")
+# sh_clf  = spam.models.load_spam_ham_pipeline(FN_SH_ARFF)  # Trains an SH classifier based on the provided spam data.
 df_huts = utils.load_huts_mn_df_from_fn(FN_HUTS_MN)
-X_huts  = spam.util.huts_tensor_from_df(df_huts)
-df_huts['spam'] = sh_clf.predict(X_huts)
+# X_huts  = spam.util.huts_tensor_from_df(df_huts)
+# df_huts['spam'] = sh_clf.predict(X_huts)
 
-print("size before spam filter: {}".format(len(df_huts)))
-df_huts = df_huts[df_huts['spam'] == 0]
-print("size after after filter: {}".format(len(df_huts)))
+# print("size before spam filter: {}".format(len(df_huts)))
+# df_huts = df_huts[df_huts['spam'] == 0]
+# print("size after after filter: {}".format(len(df_huts)))
 
-# df_huts = df_huts[:50000]
+df_huts = df_huts[:1000]
 
 # Preprocessing ###
 print("preprocessing spam filtered dataset")
@@ -43,6 +44,11 @@ tkz = TweetTokenizer(strip_handles=True, reduce_len=True)
 ltz = WordNetLemmatizer()
 stz = SentimentIntensityAnalyzer()
 alx = utils.read_lexicon_to_dict(FN_LEXICON)
+# BERT embedding model and tokenizer.
+
+bert_m = AutoModel.from_pretrained("vinai/bertweet-base")
+bert_t = AutoTokenizer.from_pretrained("vinai/bertweet-base")
+
 df_huts = processing.preprocess_tweets_w_alex(df_huts,
                                               tkz,
                                               ltz,
@@ -50,7 +56,9 @@ df_huts = processing.preprocess_tweets_w_alex(df_huts,
                                               alx,
                                               verbose=True,
                                               sent=stz,
-                                              mn=True)
+                                              mn=True,
+                                              bert_model=bert_m,
+                                              bert_token=bert_t)
 df_huts.to_csv(FN_OUT_RAW, index=False, quoting=csv.QUOTE_NONNUMERIC)
 
 # User Sequences

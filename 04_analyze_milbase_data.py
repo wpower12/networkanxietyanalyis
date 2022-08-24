@@ -15,7 +15,7 @@ df = pd.read_csv(FN_MB_DATA,
                  dtype={'fips': str},
                  parse_dates=['created_at'],
                  infer_datetime_format=True)
-df['lemmas'] = df['lemmas'].apply(utils.str_to_lemma_list)
+df['lemmas'] = df['lemmas'].apply(utils.str_to_list)
 
 # Need to isolate over bases, and then days.
 bases = sorted(df['idbase'].unique())

@@ -16,7 +16,7 @@ df = pd.read_csv(FN_NATIONAL_DATA,
                  dtype={'fips': str},
                  parse_dates=['created_at'],
                  infer_datetime_format=True)
-df['lemmas'] = df['lemmas'].apply(utils.str_to_lemma_list)
+df['lemmas'] = df['lemmas'].apply(utils.str_to_list)
 
 df['created_at'] = df['created_at'].apply(lambda dt: dt.date())
 df['pos_sent'] = df['sentiment'].apply(lambda s: 1 if s > SENT_THRESHOLD else 0)
