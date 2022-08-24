@@ -1,4 +1,7 @@
 import pandas as pd
+import torch
+import numpy as np
+import random
 import string
 from nltk.corpus import stopwords
 
@@ -32,7 +35,7 @@ def str_to_tuple_list(s):
     return tuples
 
 
-def str_to_lemma_list(s):
+def str_to_list(s):
     if s == "[]":
         return []
     return s.replace("[", "").replace("]", "").replace('\'', "").split(",")
@@ -104,3 +107,9 @@ def load_huts_mn_df_from_fn(fn):
                           infer_datetime_format=True,
                           low_memory=False)
     return df_huts
+
+
+def set_random_seeds(seed_value):
+    torch.manual_seed(seed_value)
+    random.seed(seed_value)
+    np.random.seed(seed_value)

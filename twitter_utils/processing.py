@@ -61,7 +61,8 @@ stopwords: list of stopwords.
 alex: Anxiety lexicon: A map of words to their anxiety scores.
 fn_stub: the string that'll go before [lemma, dict, bow].csv. Assumed to already have its id and stuff.
 """
-def preprocess_tweets_w_alex(df, tkz, ltz, stopwords, alex, verbose=False, sent=None, mn=False):
+def preprocess_tweets_w_alex(df, tkz, ltz, stopwords, alex, verbose=False, sent=None, mn=False,
+                             bert_model=None, bert_token=None):
     clean_urls(df)
     if verbose: print("urls cleaned")
 
@@ -92,6 +93,10 @@ def preprocess_tweets_w_alex(df, tkz, ltz, stopwords, alex, verbose=False, sent=
         # convert MN string into actual list.
         df['mentioned_users'] = df['mentioned_users'].apply(mu_str_to_list)
 
+    if bert_model is not None and bert_token is not None:
+        if verbose: print("adding bert features")
+        df['bert'] = df['text'].apply(lambda t: bert_model(torch.tensor([bert_token.encode(t)])))
+
     return df
 
 
@@ -120,7 +125,7 @@ def make_preprocess(tkz, ltz, stopwords):
 
 def generate_topic_terms(df_bow, text_dict, fn_out, n_topics=50, r_state=1, n_passes=1, verbose=False):
     df_bow.drop(df_bow[df_bow['bow_features'] == "[]"].index, inplace=True) # Drop 'empty' tweets
-    df_bow['bow_features'] = df_bow['bow_features'].apply(str_to_tuplelist)
+    df_bow['bow_features'] = df_bow['bow_features'].apply(str_to_tuple_list)
 
     if verbose: print("bow feature df loaded. performing LDA")
     tweets_lda = LdaModel(df_bow['bow_features'].to_list(),
