@@ -52,6 +52,6 @@ pipeline.process_raw_tweets_to_user_dfs(FN_RAW_MU_TWEETS,
                                         DIR_MENTIONED_USERS,
                                         process_mn=False)
 
-print("## generating examples")
-pipeline.generate_exs_from_cu_mu_dirs(DIR_CENTRAL_USERS, DIR_MENTIONED_USERS, WINDOW_SIZE, ANX_THRESHOLD)
+# print("## generating examples")
+# pipeline.generate_exs_from_cu_mu_dirs(DIR_CENTRAL_USERS, DIR_MENTIONED_USERS, WINDOW_SIZE, ANX_THRESHOLD)
 
