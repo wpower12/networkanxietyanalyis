@@ -116,6 +116,62 @@ def generate_exs_from_cu_mu_dirs(user_seq_dir, mu_seq_dir, window_size, anx_thre
     return example_graph_seqs, example_labels
 
 
+def generate_exs_from_cu_mu_dirs_cached(user_seq_dir, mu_seq_dir, window_size, anx_threshold, limit=None,
+                                 target_col="ave_pos_anx", verbose=True):
+    user_files = [f for f in listdir(user_seq_dir) if isfile(join(user_seq_dir, f))]
+    mu_files = [f for f in listdir(mu_seq_dir) if isfile(join(mu_seq_dir, f))]
+
+    if limit is not None:
+        user_files = user_files[:limit]
+
+    if verbose: print("reading raw user sequences.")
+
+    # Need to build the user_id -> df map.
+    user_id_2_df = {}
+    mus = []
+    for f in tqdm(user_files, delay=0.1, unit="user", disable=(not verbose)):
+        user_id = int(f.replace("sequences_", "").replace(".csv", ""))
+        user_df = pd.read_csv("{}/{}".format(user_seq_dir, f),
+                              parse_dates=[0],
+                              infer_datetime_format=True,
+                              dtype={"mentioned_users": str})
+        user_df['mentioned_users'].fillna("", inplace=True)
+        user_id_2_df[user_id] = user_df
+        mus.extend(user_df['mentioned_users'].unique())
+
+    mu_fns = {mu: "sequences_{}.csv".format(mu) for mu in mus}
+
+    # mu_id_2_df = {}
+    # for f in mu_pbar:
+    #     mu_id = int(f.replace("sequences_", "").replace(".csv", ""))
+    #     mu_df = pd.read_csv("{}/{}".format(mu_seq_dir, f),
+    #                         parse_dates=[0],
+    #                         infer_datetime_format=True,
+    #                         dtype={"mentioned_users": str})
+    #     mu_df['mentioned_users'].fillna("", inplace=True)
+    #     mu_id_2_df[mu_id] = mu_df
+
+    # We will iterate over JUST user_id_2_df for our 'central' users for the examples
+    # but the merged dict will be used to fill in the mentioned user network data.
+    # mu_id_2_df.update(user_id_2_df)
+    # all_uids_2_df = mu_id_2_df
+
+    if verbose: print("building example graph sequences")
+    example_graph_seqs = []
+    example_labels = []
+    for _, user_id in enumerate(tqdm(user_id_2_df, delay=0.1, unit="user", disable=(not verbose))):
+        df_central_user = user_id_2_df[user_id]
+        graphs, labels = create_examples_from_raw_mn_sequences(df_central_user,
+                                                               user_id,
+                                                               mu_fns,
+                                                               window_size,
+                                                               anx_threshold,
+                                                               target_col=target_col)
+        example_graph_seqs.extend(graphs)
+        example_labels.extend(labels)
+    return example_graph_seqs, example_labels
+
+
 def read_user_mn_examples_from_dir(user_seq_dir, window_size, anx_threshold, limit=None, target_col="ave_pos_anx",
                                    verbose=True):
     user_files = [f for f in listdir(user_seq_dir) if isfile(join(user_seq_dir, f))]
@@ -152,7 +208,7 @@ def read_user_mn_examples_from_dir(user_seq_dir, window_size, anx_threshold, lim
     return example_graph_seqs, example_labels
 
 
-def balance_and_split_data(sequences, labels, test_frac=0.1):
+def balance_and_split_data(sequences, labels, test_frac=0.1, limit=None):
     print("balancing dataset and splitting test/train groups.")
     idx_pos = [idx for idx, l in enumerate(labels) if l.sum() > 0]
     idx_neg = [idx for idx, l in enumerate(labels) if l.sum() == 0]
@@ -198,23 +254,25 @@ def balance_and_split_data(sequences, labels, test_frac=0.1):
     test_data = list(zip(test_seqs, test_labels))
     random.shuffle(test_data)
 
+    if limit is not None:
+        train_data = train_data[:limit]
+        test_data = test_data[:limit]
+
     return train_data, test_data
 
 
 def eval_batch(model, loss_func, data_batch):
     loss_acc = 0
     for (seq, y) in data_batch:
-        loss_acc += loss_func(model(seq), y).item()
+        loss_acc += loss_func(model(seq), y.float()).item()
     return loss_acc / len(data_batch)
 
 
 '''
 'Manually' batches sequences. I think this is the only way to batch the graph sequences? Idk. Seems to be working. 
 '''
-
-
-def train_batched_model(model, criteria, optimizer, data_train, data_test, log_file=None, batch_size=16,
-                        num_epochs=1, verbose=True, test_interval=100):
+def train_batched_graph_model(model, criteria, optimizer, data_train, data_test, log_file=None, batch_size=16,
+                              num_epochs=1, verbose=True, test_interval=100):
     for epoch in range(num_epochs):
         exs_pb = tqdm(data_train, delay=0.25, unit="examples", disable=(not verbose))
         running_loss = 0
@@ -222,7 +280,6 @@ def train_batched_model(model, criteria, optimizer, data_train, data_test, log_f
         batch = []
         for (gs, y) in exs_pb:
             batch.append((gs, y))
-
             if len(batch) < batch_size:
                 continue
             else:
@@ -231,7 +288,8 @@ def train_batched_model(model, criteria, optimizer, data_train, data_test, log_f
                 # Create batches of examples and targets such that the operations can still be back proped/autograd-ed?
                 outputs = [model(ex) for (ex, _) in batch]
                 outputs = torch.stack(outputs)
-                targets = [target for (_, target) in batch]
+
+                targets = [target.float() for (_, target) in batch]
                 targets = torch.stack(targets)
 
                 loss = criteria(outputs, targets)

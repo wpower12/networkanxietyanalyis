@@ -1,3 +1,4 @@
+import pandas as pd
 import numpy as np
 from gensim.corpora import Dictionary
 from gensim.models.ldamodel import LdaModel
@@ -5,7 +6,8 @@ from .utils import str_to_tuple_list, make_clean_lemmas
 from tqdm import tqdm
 import torch
 from torch_geometric.data import Data
-from torch_geometric_temporal.signal import DynamicGraphTemporalSignal
+
+from functools import lru_cache
 
 """
 df: A pandas DataFrame with [userid, text] columns
@@ -331,7 +333,65 @@ def create_examples_from_raw_mn_sequences(df, user, other_users, window_size, an
             example_sequences.append(graph_sequence[i:i+window_size])
 
             label = df_targets.iloc[i + window_size].tolist()
-            label = torch.tensor([[label]], dtype=torch.float)
+            label = torch.tensor([[label]], dtype=torch.long)
+            example_labels.append(label)
+
+    return example_sequences, example_labels
+
+
+def create_examples_from_raw_mn_sequences_cache(df, user, mentioned_user_fns, window_size, anx_threshold, feature_cols=None, target_col='ave_pos_anx'):
+    if feature_cols is None:
+        feature_cols = ['ave_pos_sent', 'ave_neg_sent']
+
+    df_features = df[feature_cols]
+    df_targets  = df[target_col].apply(lambda r: 1 if r > anx_threshold else 0)
+    n_rows = len(df_features)
+
+    @lru_cache(maxsize=64)
+    def get_other_user(user_id):
+        if user_id in mentioned_user_fns:
+            mu_fn = mentioned_user_fns[user_id]
+            mu_df = pd.read_csv(mu_fn,
+                                parse_dates=[0],
+                                infer_datetime_format=True,
+                                dtype={"mentioned_users": str})
+            mu_df['mentioned_users'].fillna("", inplace=True)
+            return mu_df
+        else:
+            return None
+
+    # We need X, and edge_index for each day. Then we make windows
+    graph_sequence = []
+    for i in range(n_rows):
+        # nodeid_2_userid = [user]
+        X = list()
+        X.append(df_features.iloc[i].tolist())
+        edges = [(0, 0)]
+
+        neighbor_str = df.iloc[i]['mentioned_users']
+        if neighbor_str != 0:  # If neighbors == 0, there is no list of neighbor_ids. Yay dynamic typing!
+            neighbor_ids = [int(s) for s in neighbor_str.split(",")[:-1]]  # If there is a neighbor list, it's a string.
+            n_idx = 0
+            for _, neighbor in enumerate(neighbor_ids):
+                neighbor_features = get_other_user(neighbor)
+                if neighbor_features is not None:
+                    X.append(neighbor_features)
+                    edges.append((0, n_idx))
+                    n_idx += 1
+
+        x_t = torch.tensor(X).type(torch.LongTensor)
+        edge_t = torch.tensor(edges)
+        edge_t = torch.reshape(edge_t, (2, -1))
+        graph_sequence.append(Data(x=x_t, edge_index=edge_t))
+
+    example_sequences = []
+    example_labels = []
+    for i in range(len(graph_sequence)):
+        if i < (n_rows-window_size-1):
+            example_sequences.append(graph_sequence[i:i+window_size])
+
+            label = df_targets.iloc[i + window_size].tolist()
+            label = torch.tensor([[label]])
             example_labels.append(label)
 
     return example_sequences, example_labels

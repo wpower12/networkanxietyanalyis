@@ -18,7 +18,7 @@ FN_RAW_MU_TWEETS = "data/prepared/mb_raw_mentioned_tweets.csv"
 FN_PROCESSED_CU_TWEETS = "data/prepared/mb_processed_central_tweets.csv"
 FN_PROCESSED_MU_TWEETS = "data/prepared/mb_processed_mentioned_tweets.csv"
 DIR_CENTRAL_USERS      = "data/prepared/mb_00_central_users"
-DIR_MENTIONED_USERS    = "data/prepared/mb_00_mentioned_users"
+DIR_MENTIONED_USERS    = "data/prepared/mb_00_mentioned_users_old"
 #######################################################################################################################
 
 print("## initializing NLP components.")
