@@ -1,5 +1,5 @@
 import pandas as pd
-from twitter_utils import processing as proc
+from naatools import processing as proc
 
 import string
 import csv

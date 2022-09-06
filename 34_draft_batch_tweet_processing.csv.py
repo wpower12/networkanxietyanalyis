@@ -2,7 +2,7 @@ import pandas as pd
 import os
 import csv
 from tqdm import tqdm
-from twitter_utils import processing, utils
+from naatools import processing, utils
 from nltk.tokenize import TweetTokenizer
 from nltk.stem import WordNetLemmatizer
 from nltk.sentiment.vader import SentimentIntensityAnalyzer

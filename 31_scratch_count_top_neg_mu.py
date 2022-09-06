@@ -1,7 +1,7 @@
 import tweepy
 from tqdm import tqdm
 from decouple import config
-from twitter_utils import utils
+from naatools import utils
 
 FN_RAW_DATA = "data/raw/mil_bases/historic_user_tweets_w_mn.csv"
 TOP_N_MUS = 40000

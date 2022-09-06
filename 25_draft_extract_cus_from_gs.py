@@ -3,7 +3,7 @@ cus = central user sequence, the sequence of node features for the central (0th)
       The convention that the 0th user is the central user is maintained in the data pipeline code.
 gs  = graph sequence, the original/input sequence of graphs.
 """
-from twitter_utils import pipeline, processing
+from naatools import pipeline, processing
 
 USER_SEQ_DIR = "data/prepared/mb_user_sequences_new_targets"
 ANX_THRESHOLD = 0.0

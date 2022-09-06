@@ -2,7 +2,7 @@ import pandas as pd
 from nltk.tokenize import TweetTokenizer
 from nltk.stem import WordNetLemmatizer
 from nltk.sentiment.vader import SentimentIntensityAnalyzer
-from twitter_utils import pipeline, utils
+from naatools import pipeline, utils
 
 SENT_THRESH = 0.2
 ANX_THRESHOLD = 0.1

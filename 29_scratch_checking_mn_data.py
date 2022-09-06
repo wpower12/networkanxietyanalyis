@@ -1,4 +1,4 @@
-from twitter_utils import utils
+from naatools import utils
 
 FN_RAW_DATA = "data/raw/mil_bases/historic_user_tweets_w_mn.csv"
 

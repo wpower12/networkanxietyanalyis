@@ -1,7 +1,7 @@
 import pandas as pd
 import csv
 import matplotlib.pyplot as plt
-from twitter_utils import utils
+from naatools import utils
 
 DATE_RANGE = ['2022-02-12', '2022-03-10']
 DATE_RANGE = pd.date_range(start=DATE_RANGE[0], end=DATE_RANGE[1], freq="D")

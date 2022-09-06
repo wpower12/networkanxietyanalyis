@@ -1,6 +1,6 @@
 import pandas as pd
 import matplotlib.pyplot as plt
-from twitter_utils import utils
+from naatools import utils
 
 DATE_RANGE = ['2022-01-02', '2022-06-20']
 DATE_RANGE = pd.date_range(start=DATE_RANGE[0], end=DATE_RANGE[1], freq="D")

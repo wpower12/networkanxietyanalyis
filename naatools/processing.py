@@ -63,7 +63,7 @@ stopwords: list of stopwords.
 alex: Anxiety lexicon: A map of words to their anxiety scores.
 fn_stub: the string that'll go before [lemma, dict, bow].csv. Assumed to already have its id and stuff.
 """
-def preprocess_tweets_w_alex(df, tkz, ltz, stopwords, alex, verbose=False, sent=None, mn=False, limit=None):
+def preprocess_tweets_w_alex(df, tkz, ltz, stopwords, alex, verbose=False, sent=None, mn=False, limit=None, afinn=None):
     if limit is not None:
         df = df[:limit].copy()
 
@@ -77,13 +77,25 @@ def preprocess_tweets_w_alex(df, tkz, ltz, stopwords, alex, verbose=False, sent=
             return 0
 
     if sent is not None:
-        if verbose: print("adding sentiment features")
+        if verbose: print("adding vader sentiment features")
         tqdm.pandas(unit="tweet", delay=0.1, disable=(not verbose))
         df['sentiment'] = df['text'].progress_apply(calc_sent)
 
     if verbose: print("tokenizing and lemmatizing.")
     tqdm.pandas(unit="tweet", delay=0.1, disable=(not verbose))
     df['lemmas'] = df['text'].progress_apply(make_preprocess(tkz, ltz, stopwords))
+
+    def calc_afinn(lemmas):
+        s = 0
+        for lemma in lemmas:
+            if lemma in afinn:
+                s += afinn[lemma]
+        return s
+
+    if afinn is not None:
+        if verbose: print("adding afinn sentiment features")
+        tqdm.pandas(unit="tweet", delay=0.1, disable=(not verbose))
+        df['sentiment_afinn'] = df['lemmas'].progress_apply(calc_afinn)
 
     # calculate anxiety score
     def anxiety_score(lemmas):
@@ -194,12 +206,12 @@ def filter_terms(df, terms_to_keep):
     window_size - For the rolling window method, how large the rolling window is. 
 '''
 def create_rolling_sequences(df, sent_thresh, date_range, window_size):
-    # Create windowed data. First we group by user id and the date.
     df['datetime'] = df['datetime'].apply(lambda dt: dt.date())
     df['pos_sent'] = df['sentiment'].apply(lambda s: 1 if s > sent_thresh else 0)
     df['neg_sent'] = df['sentiment'].apply(lambda s: 1 if s < -1 * sent_thresh else 0)
     df['pos_anx'] = df['anxiety'].apply(lambda a: 1 if a > 0.0 else 0)
     df['neg_anx'] = df['anxiety'].apply(lambda a: 1 if a < 0.0 else 0)
+
     df_agg = df.groupby(['datetime']).agg(
         sum_anxiety=("anxiety", "sum"),
         count_pos_anx=("pos_anx", "sum"),

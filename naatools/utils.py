@@ -113,3 +113,13 @@ def set_random_seeds(seed_value):
     torch.manual_seed(seed_value)
     random.seed(seed_value)
     np.random.seed(seed_value)
+
+
+def read_afinn(fn):
+    afin_lex = dict()
+    with open(fn, 'r') as f:
+        for line in f.readlines():
+            word, valance = line.split("\t")
+            valance = int(valance.replace("\n", ""))
+            afin_lex[word] = valance
+    return afin_lex

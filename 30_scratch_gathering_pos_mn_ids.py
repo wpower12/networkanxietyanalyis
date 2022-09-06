@@ -8,7 +8,7 @@ from decouple import config
 
 import snscrape.modules.twitter as sntwitter
 
-from twitter_utils import utils
+from naatools import utils
 
 # iterate over the directory of user sequences. Each csv file is a 'complete' (with 0's) sequence of user data.
 # for each user, we look for the indexs with 'positive' labels. That is, the field 'max_raw_anxiety' is 1 (or -1?)

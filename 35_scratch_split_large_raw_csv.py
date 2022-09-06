@@ -1,5 +1,5 @@
 import pandas as pd
-from twitter_utils import utils
+from naatools import utils
 
 FN_INPUT_SMALL = "data/raw/mb_raw_mentioned_tweets_POS_EXAMPLES.csv"
 FN_INPUT_LARGE = "data/mb_raw_mentioned_tweets_POS_EXAMPLES.csv"

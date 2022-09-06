@@ -7,7 +7,7 @@ from nltk.stem import WordNetLemmatizer
 from nltk.sentiment.vader import SentimentIntensityAnalyzer
 from transformers import AutoModel, AutoTokenizer
 from tqdm import tqdm
-from twitter_utils import utils, processing
+from naatools import utils, processing
 import spam
 
 SENT_THRESH = 0.2

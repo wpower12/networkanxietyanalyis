@@ -1,5 +1,5 @@
-from twitter_utils import processing as proc
-from twitter_utils import utils
+from naatools import processing as proc
+from naatools import utils
 import pandas as pd
 import string
 from nltk.tokenize import TweetTokenizer

@@ -3,7 +3,7 @@ from torch.nn import Module, RNN, Linear, BCELoss
 import torch.nn.functional as F
 from torch.optim import SGD
 from torch_geometric.nn import GCNConv
-from twitter_utils import pipeline, utils
+from naatools import pipeline, utils
 from tqdm import tqdm
 
 USER_SEQ_DIR = "data/prepared/mb_user_sequences_new_targets"

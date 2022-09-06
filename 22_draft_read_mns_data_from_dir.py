@@ -3,7 +3,7 @@ from os.path import isfile, join
 
 import pandas as pd
 from tqdm import tqdm
-from twitter_utils import processing
+from naatools import processing
 
 USER_SEQ_DIR = "data/prepared/mb_user_sequences"
 WINDOW_SIZE = 5

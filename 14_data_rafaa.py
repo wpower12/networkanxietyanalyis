@@ -1,5 +1,5 @@
 import pandas as pd
-from twitter_utils import gather
+from naatools import gather
 
 DATE_RANGE = ['2021-11-11', '2022-04-11']
 STATES = ['idaho', 'montana', 'oregon']

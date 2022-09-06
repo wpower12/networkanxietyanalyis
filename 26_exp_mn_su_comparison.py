@@ -3,7 +3,7 @@ import torch_geometric.nn as pygnn
 from torch.nn import Module, RNN, Linear, BCELoss
 from torch.nn.functional import relu
 from torch.optim import SGD
-from twitter_utils import pipeline, processing, utils
+from naatools import pipeline, processing, utils
 
 # Trying to stay reproducible.
 RANDOM_SEED = 0

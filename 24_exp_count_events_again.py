@@ -1,4 +1,4 @@
-from twitter_utils import pipeline
+from naatools import pipeline
 
 USER_SEQ_DIR = "data/prepared/mb_user_sequences_new_targets"
 WINDOW_SIZE = 5

@@ -4,7 +4,7 @@ from os.path import isfile, join
 import pandas as pd
 import numpy as np
 from tqdm import tqdm
-from twitter_utils import processing
+from naatools import processing
 
 WINDOW_SIZE = 7
 ANX_THRESHOLD = 0.0

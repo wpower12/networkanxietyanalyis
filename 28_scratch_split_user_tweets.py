@@ -1,6 +1,6 @@
 import pandas as pd
 from tqdm import tqdm
-from twitter_utils import utils, processing
+from naatools import utils, processing
 import os
 
 FN_HUTS_MN = "data/raw/mil_bases/historic_user_tweets_w_mn.csv"

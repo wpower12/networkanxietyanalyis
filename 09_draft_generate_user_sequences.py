@@ -7,7 +7,7 @@ from nltk.corpus import stopwords
 from nltk.stem import WordNetLemmatizer
 from nltk.sentiment.vader import SentimentIntensityAnalyzer
 
-from twitter_utils import utils, processing
+from naatools import utils, processing
 
 SENT_THRESH = 0.2
 WINDOW_SIZE = 5
